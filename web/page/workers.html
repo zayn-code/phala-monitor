@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>workers-monitor</title>
+
+    <!-- Import style -->
+    <link rel="stylesheet" href="/static/element-plus/element-plus@2.2.17.css"/>
+    <!-- Import Vue 3 -->
+    <script src="/static/element-plus/vue@3.2.39.prod.js"></script>
+    <!-- Import component library -->
+    <script src="/static/element-plus/element-plus@2.2.17.full.js"></script>
+    <script src="/static/js/axios.min.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <el-card class="box-card">
+        <template #header>
+            <div class="card-header">
+                <span>已忽略监听的worker(prb中worker的Name)</span>
+            </div>
+        </template>
+        <el-space wrap :size="20">
+            <el-tag
+                    v-for="(index,worker) in ignoreWorkers"
+                    :key="worker"
+                    closable
+                    size="large"
+                    type="info"
+                    :disable-transitions="false"
+                    @close="cancelIgnore(worker)"
+            >
+                {{ worker }}
+            </el-tag>
+            <el-button v-if="inputVisible" style="padding: 0;width:103px">
+                <el-input
+                        ref="InputRef"
+                        style="display: inline-block"
+                        v-model="inputValue"
+                        @keyup.enter="addIgnore"
+                        @blur="inputVisible = false">
+                </el-input>
+            </el-button>
+            <el-button type="success" v-else style="display: inline-block" @click="showInput"> new worker</el-button>
+        </el-space>
+    </el-card>
+    <el-card style="margin-top: 20px;min-height: 323px">
+        <template #header>
+            <div class="card-header">
+                <span>异常中的worker(右上角为重启次数)</span>
+            </div>
+        </template>
+        <el-space wrap :size="30" v-if="Object.keys(exceptionWorkers).length > 0">
+            <el-badge v-for="(count,worker) in exceptionWorkers" :value="count">
+                <el-button>{{worker}}</el-button>
+            </el-badge>
+        </el-space>
+        <el-result
+                v-else
+                icon="success"
+                title="Success Tip"
+                sub-title="Please follow the instructions"
+        ></el-result>
+    </el-card>
+</div>
+
+</body>
+<script>
+const app = Vue.createApp({
+    data: () => {
+        return {
+            ignoreWorkers: {},
+            inputVisible: false,
+            inputValue: "",
+            exceptionWorkers: {}
+        }
+    },
+    methods: {
+        cancelIgnore(worker) {
+            delete this.ignoreWorkers[worker]
+            this.saveIgnoreWorkers()
+        },
+        async addIgnore() {
+            if (this.inputValue) {
+                this.ignoreWorkers[this.inputValue] = 1
+            }
+            await this.saveIgnoreWorkers()
+            this.inputVisible = false
+            this.inputValue = ''
+        },
+        showInput() {
+            this.inputVisible = true
+            this.$nextTick(() => {
+                this.$refs.InputRef.focus()
+            })
+        },
+        saveIgnoreWorkers() {
+            const loading = ElementPlus.ElLoading.service()
+            axios.post('/api/saveIgnoreWorkers', this.ignoreWorkers).then(() => {
+                loading.close()
+                ElementPlus.ElMessage.success('更新成功！')
+            }).catch(err => {
+                loading.close()
+                ElementPlus.ElMessage.error(err.message)
+            })
+        }
+    },
+    mounted() {
+        setInterval(() => {
+            axios.get('/api/getWorkersData').then(res => {
+                this.ignoreWorkers = res.data.ignoreWorkers
+                this.exceptionWorkers = res.data.exceptionWorkers
+            }).catch(err => {
+                ElementPlus.ElMessage.error(err.message)
+            })
+        }, 2000)
+    }
+});
+app.use(ElementPlus).mount("#app")
+</script>
+</html>
