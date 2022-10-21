@@ -15,11 +15,6 @@ import (
 	"time"
 )
 
-const (
-	PrbOrigin = "PrbOrigin"
-	PeerId    = "PeerId"
-)
-
 type worker struct {
 	Uuid     string `json:"uuid"`
 	Endpoint string `json:"endpoint"`
@@ -57,21 +52,8 @@ type minerInfo struct {
 }
 type WorkerStatusListType map[string]int
 
-var WorkerStatusList WorkerStatusListType
-var origin string
-var peerId string
-
-func init() {
-	origin = common.GetEnvDefault(PrbOrigin, "http://192.168.2.239:3000")
-	peerId = common.GetEnvDefault(PeerId, "")
-	if peerId == "" {
-		panic("peerId is required")
-	}
-	WorkerStatusList = make(map[string]int)
-}
-
 func WorkerStart() {
-	url := origin + "/ptp/proxy/" + peerId + "/GetWorkerStatus"
+	url := global.PrbConfig.Origin + "/ptp/proxy/" + global.PrbConfig.PeerId + "/GetWorkerStatus"
 
 	//发起请求
 	var resp workerStatusResp
@@ -101,6 +83,7 @@ func WorkerStart() {
 	var ignoreWorkers map[string]int
 	_ = json.Unmarshal([]byte(db.GetConfig(global.IgnoreWorkers)), &ignoreWorkers)
 
+	alarmContent := ""
 	for _, w := range resp.Data.WorkerStates {
 		if isSave {
 			saveData(w, date)
@@ -112,7 +95,7 @@ func WorkerStart() {
 					restartWorker(w.Worker.Uuid, w.LastMessage)
 				}
 				if WorkerStatusList[w.Worker.Name]%720 == 0 {
-					common.Alarm(w.Worker.Name + "\n" + w.LastMessage + "\n\n")
+					alarmContent += "<br>\n------<br>\n<b>" + w.Worker.Name + "</b><br>\n" + w.LastMessage + "<br>\n------<br>\n"
 				}
 				WorkerStatusList[w.Worker.Name]++
 			} else {
@@ -121,6 +104,9 @@ func WorkerStart() {
 		}
 	}
 
+	if alarmContent != "" {
+		common.Alarm(alarmContent)
+	}
 }
 
 //重启worker
@@ -135,7 +121,7 @@ func restartWorker(uuid string, msg string) {
 	client := resty.New()
 	_, err := client.R().
 		SetBody(reqDataType{Ids: []string{uuid}}).
-		Post(origin + "/ptp/proxy/" + peerId + "/RestartWorker")
+		Post(global.PrbConfig.Origin + "/ptp/proxy/" + global.PrbConfig.PeerId + "/RestartWorker")
 	if err != nil {
 		log.Println("restart worker error:", err)
 	}

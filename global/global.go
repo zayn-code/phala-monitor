@@ -1,9 +1,29 @@
 package global
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
+
+type MailConfigType struct {
+	From     string
+	To       []string
+	Subject  string
+	Host     string
+	Port     int
+	Username string
+	Password string
+}
+
+type PrbConfigType struct {
+	Origin string
+	PeerId string
+}
 
 var (
-	DB *gorm.DB
+	DB         *gorm.DB
+	MailConfig MailConfigType
+
+	PrbConfig PrbConfigType
 )
 
 const (

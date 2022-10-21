@@ -5,6 +5,12 @@ import (
 	"log"
 )
 
+var WorkerStatusList WorkerStatusListType
+
+func init() {
+	WorkerStatusList = make(map[string]int)
+}
+
 func InitCron() {
 	c := cron.New()
 	err := c.AddFunc("0 */1 * * * *", WorkerStart)

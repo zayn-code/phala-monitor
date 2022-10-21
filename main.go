@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	InitEnv()
 	db.InitSqlite()
 	cron.InitCron()
 	web.InitWeb()
