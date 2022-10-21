@@ -65,7 +65,7 @@ func init() {
 	origin = common.GetEnvDefault(PrbOrigin, "http://192.168.2.239:3000")
 	peerId = common.GetEnvDefault(PeerId, "")
 	if peerId == "" {
-		common.ErrorExit(common.WithErrorMsg("peerId is required"))
+		panic("peerId is required")
 	}
 	WorkerStatusList = make(map[string]int)
 }

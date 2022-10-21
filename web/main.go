@@ -2,9 +2,7 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
-	"pha/common"
 )
 
 func InitWeb() {
@@ -26,7 +24,6 @@ func InitWeb() {
 
 	err := r.Run(":8080")
 	if err != nil {
-		log.Println("init web error:", err)
-		common.ErrorExit()
+		panic("init web error:" + err.Error())
 	}
 }
