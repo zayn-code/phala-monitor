@@ -83,7 +83,6 @@ const app = Vue.createApp({
         },
         async addIgnore() {
             if (this.inputValue) {
-                console.log(this.ignoreWorkers)
                 this.ignoreWorkers[this.inputValue] = 1
             }
             await this.saveIgnoreWorkers()
@@ -110,7 +109,7 @@ const app = Vue.createApp({
     mounted() {
         setInterval(() => {
             axios.get('/api/getWorkersData').then(res => {
-                this.ignoreWorkers = res.data.ignoreWorkers
+                this.ignoreWorkers = res.data.ignoreWorkers || {}
                 this.exceptionWorkers = res.data.exceptionWorkers
             }).catch(err => {
                 ElementPlus.ElMessage.error(err.message)
