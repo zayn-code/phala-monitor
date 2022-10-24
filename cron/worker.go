@@ -101,6 +101,8 @@ func WorkerStart() {
 			} else {
 				WorkerStatusList[w.Worker.Name] = 0
 			}
+		} else {
+			WorkerStatusList[w.Worker.Name] = 0
 		}
 	}
 
