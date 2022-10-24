@@ -83,7 +83,7 @@ const app = Vue.createApp({
         },
         async addIgnore() {
             if (this.inputValue) {
-                this.ignoreWorkers[this.inputValue] = 1
+                this.$set(this.ignoreWorkers, this.inputValue, 1)
             }
             await this.saveIgnoreWorkers()
             this.inputVisible = false
