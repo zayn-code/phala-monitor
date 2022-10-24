@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>收益记录</title>
+
+    <!-- Import style -->
+    <link rel="stylesheet" href="/static/element-plus/element-plus@2.2.17.css"/>
+
+    <!-- Import Vue 3 -->
+    <script src="/static/element-plus/vue@3.2.39.prod.js"></script>
+    <!-- Import component library -->
+    <script src="/static/element-plus/element-plus@2.2.17.full.js"></script>
+    <script src="/static/js/axios.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/@element-plus/icons-vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+
+</head>
+<body>
+
+<div id="app">
+    <el-affix :position="top" style="display: flex;justify-content: center">
+        <a href="/page/workers" style="text-decoration: none">
+            <el-button size="large" :type="pathname=='/page/workers' ? 'primary' :'default'" style="width: 200px">监控面板
+            </el-button>
+        </a>
+        <a href="/page/income" style="text-decoration: none">
+            <el-button size="large" :type="pathname=='/page/income' ? 'primary' :'default'" style="width: 200px">收益记录
+            </el-button>
+        </a>
+    </el-affix>
+    <el-card style="margin-top: 10px">
+        <el-input v-model="workerName" placeholder="请输入worker名称" @keyup.enter="getData">
+            <template #append>
+                <el-button icon="Search" @click="getData"/>
+            </template>
+        </el-input>
+    </el-card>
+
+    <div id="incomeEchart" style="height: 300px"></div>
+</div>
+
+</body>
+<script>
+
+const app = Vue.createApp({
+    data() {
+        return {
+            pathname: window.location.pathname,
+            workerName: "",
+        }
+    },
+    methods: {
+        getData() {
+            const loading = ElementPlus.ElLoading.service()
+            axios.post('/api/getWorkerIncome', { workerName: this.workerName }).then(res => {
+                loading.close()
+                this.renderEchart(res.data)
+            }).catch(err => {
+                loading.close()
+                ElementPlus.ElMessage.error(err.response ? err.response.data : err.message)
+            })
+        },
+        renderEchart(data) {
+            console.log(data)
+            const chartDom = document.getElementById('incomeEchart')
+            const myChart = echarts.init(chartDom)
+            const xData = data.map(v => {
+                return v.date
+            })
+            const yData = data.map(v => {
+                return v.totalReward
+            })
+            let option = {
+                xAxis: {
+                    type: 'category',
+                    data: xData
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        data: yData,
+                        type: 'line',
+                        smooth: true
+                    }
+                ]
+            }
+            console.log(option)
+            myChart.setOption(option)
+        }
+    },
+    mounted() {
+    }
+})
+
+for ([name, comp] of Object.entries(ElementPlusIconsVue)) {
+    app.component(name, comp);
+}
+app.use(ElementPlus).mount("#app")
+</script>
+</html>

@@ -6,7 +6,6 @@ import (
 )
 
 func InitWeb() {
-	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	r.StaticFS("static", http.Dir("web/static"))

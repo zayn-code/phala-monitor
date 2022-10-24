@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>workers-monitor</title>
+    <title>监控面板</title>
 
     <!-- Import style -->
     <link rel="stylesheet" href="/static/element-plus/element-plus@2.2.17.css"/>
@@ -11,11 +11,22 @@
     <!-- Import component library -->
     <script src="/static/element-plus/element-plus@2.2.17.full.js"></script>
     <script src="/static/js/axios.min.js"></script>
+
 </head>
 <body>
 
 <div id="app">
-    <el-card class="box-card">
+    <el-affix :position="top" style="display: flex;justify-content: center">
+        <a href="/page/workers" style="text-decoration: none">
+            <el-button size="large" :type="pathname=='/page/workers' ? 'primary' :'default'" style="width: 200px">监控面板
+            </el-button>
+        </a>
+        <a href="/page/income" style="text-decoration: none">
+            <el-button size="large" :type="pathname=='/page/income' ? 'primary' :'default'" style="width: 200px">收益记录
+            </el-button>
+        </a>
+    </el-affix>
+    <el-card style="margin-top: 10px">
         <template #header>
             <div class="card-header">
                 <span>已忽略监听的worker(prb中worker的Name)</span>
@@ -48,7 +59,7 @@
     <el-card style="margin-top: 20px;min-height: 323px">
         <template #header>
             <div class="card-header">
-                <span>异常中的worker(右上角为重启次数)</span>
+                <span>异常中的worker(角标为重启次数)</span>
             </div>
         </template>
         <el-space wrap :size="30" v-if="Object.keys(exceptionWorkers).length > 0">
@@ -59,8 +70,8 @@
         <el-result
                 v-else
                 icon="success"
-                title="Success Tip"
-                sub-title="Please follow the instructions"
+                title="无异常"
+                sub-title="暂时未检测到异常的worker"
         ></el-result>
     </el-card>
 </div>
@@ -73,7 +84,8 @@ const app = Vue.createApp({
             ignoreWorkers: {},
             inputVisible: false,
             inputValue: "",
-            exceptionWorkers: {}
+            exceptionWorkers: {},
+            pathname: window.location.pathname
         }
     },
     methods: {
@@ -102,7 +114,7 @@ const app = Vue.createApp({
                 ElementPlus.ElMessage.success('更新成功！')
             }).catch(err => {
                 loading.close()
-                ElementPlus.ElMessage.error(err.message)
+                ElementPlus.ElMessage.error(err.response ? err.response.data : err.message)
             })
         }
     },
@@ -112,7 +124,7 @@ const app = Vue.createApp({
                 this.ignoreWorkers = res.data.ignoreWorkers || {}
                 this.exceptionWorkers = res.data.exceptionWorkers
             }).catch(err => {
-                ElementPlus.ElMessage.error(err.message)
+                ElementPlus.ElMessage.error(err.response ? err.response.data : err.message)
             })
         }, 2000)
     }

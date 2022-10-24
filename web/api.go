@@ -44,3 +44,28 @@ func GetWorkersData(c *gin.Context) {
 	})
 	return
 }
+
+//获取worker收益
+func GetWorkerIncome(c *gin.Context) {
+	type incomeParams struct {
+		WorkerName string `json:"workerName"`
+	}
+	var worker incomeParams
+	if err := c.BindJSON(&worker); err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	if worker.WorkerName == "" {
+		c.JSON(http.StatusBadRequest, "worker名称不能为空！")
+		return
+	}
+	var incomeData []db.Worker
+	if err := global.DB.
+		Where("name = ?", worker.WorkerName).
+		Order("date ASC").
+		Find(&incomeData).Error; err != nil {
+		c.JSON(http.StatusServiceUnavailable, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, incomeData)
+}
