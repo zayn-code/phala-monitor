@@ -1,6 +1,8 @@
 package db
 
 import (
+	"errors"
+	"gorm.io/gorm"
 	"pha/global"
 )
 
@@ -16,12 +18,14 @@ func (Config) TableName() string {
 //获取配置
 func GetConfig(k string) string {
 	var config Config
-	global.DB.Where("key = ?", k).First(&config)
+	if err := global.DB.Where("key = ?", k).First(&config).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		_ = SaveConfig(k, "")
+	}
 	return config.Value
 }
 
 func SaveConfig(k string, v string) error {
-	err := global.DB.Table("config").Where("key = ?", k).Save(&Config{
+	err := global.DB.Where("key = ?", k).Save(&Config{
 		Key:   k,
 		Value: v,
 	})
