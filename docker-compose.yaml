@@ -29,6 +29,4 @@ services:
       MAIL_USERNAME:
       #发件人的密码（邮箱平台的授权码），以163邮箱为例WWVXQRNWPZAZQOPO
       MAIL_PASSWORD:
-      #gin 模式release或者debug
-      GIN_MODE: release
     command: ./phala-monitor

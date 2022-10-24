@@ -5,10 +5,12 @@ import (
 	"log"
 )
 
+type WorkerStatusListType map[string]int
+
 var WorkerStatusList WorkerStatusListType
 
 func init() {
-	WorkerStatusList = make(map[string]int)
+	WorkerStatusList = make(WorkerStatusListType)
 }
 
 func InitCron() {

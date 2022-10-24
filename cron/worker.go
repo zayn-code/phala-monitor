@@ -50,7 +50,6 @@ type minerInfo struct {
 	V     string `json:"v"`
 	Stats stats  `json:"stats"`
 }
-type WorkerStatusListType map[string]int
 
 func WorkerStart() {
 	url := global.PrbConfig.Origin + "/ptp/proxy/" + global.PrbConfig.PeerId + "/GetWorkerStatus"
@@ -80,7 +79,7 @@ func WorkerStart() {
 	}
 
 	//忽略的worker
-	var ignoreWorkers map[string]int
+	var ignoreWorkers WorkerStatusListType
 	_ = json.Unmarshal([]byte(db.GetConfig(global.IgnoreWorkers)), &ignoreWorkers)
 
 	alarmContent := ""
@@ -92,7 +91,7 @@ func WorkerStart() {
 		if _, ok := ignoreWorkers[w.Worker.Name]; !ok {
 			if w.Status != "S_MINING" || !strings.Contains(w.LastMessage, "Now the worker should be mining.") {
 				if WorkerStatusList[w.Worker.Name]%5 == 0 {
-					restartWorker(w.Worker.Uuid, w.LastMessage)
+					restartWorker(w)
 				}
 				if WorkerStatusList[w.Worker.Name]%720 == 0 {
 					alarmContent += "<br>\n------<br>\n<b>" + w.Worker.Name + "</b><br>\n" + w.LastMessage + "<br>\n------<br>\n"
@@ -112,9 +111,9 @@ func WorkerStart() {
 }
 
 //重启worker
-func restartWorker(uuid string, msg string) {
-	log.Println("restart worker:")
-	log.Println(msg)
+func restartWorker(worker workerStates) {
+	log.Println("restart worker " + worker.Worker.Name + ":")
+	log.Println(worker.LastMessage)
 
 	type reqDataType struct {
 		Ids []string `json:"ids"`
@@ -122,7 +121,7 @@ func restartWorker(uuid string, msg string) {
 
 	client := resty.New()
 	_, err := client.R().
-		SetBody(reqDataType{Ids: []string{uuid}}).
+		SetBody(reqDataType{Ids: []string{worker.Worker.Uuid}}).
 		Post(global.PrbConfig.Origin + "/ptp/proxy/" + global.PrbConfig.PeerId + "/RestartWorker")
 	if err != nil {
 		log.Println("restart worker error:", err)
@@ -131,6 +130,9 @@ func restartWorker(uuid string, msg string) {
 
 //格式化奖励
 func formatReward(s string) float64 {
+	if s == "" {
+		return 0
+	}
 	strA := strings.Split(s, " ")
 	f, _ := strconv.ParseFloat(strA[0], 4)
 	if strings.Contains(strA[1], "k") {

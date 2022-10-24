@@ -12,7 +12,7 @@ import (
 
 //保存忽略的worker
 func SaveIgnoreWorker(c *gin.Context) {
-	var workersMap map[string]int
+	var workersMap cron.WorkerStatusListType
 	if err := c.BindJSON(&workersMap); err != nil {
 		c.JSON(http.StatusBadRequest, workersMap)
 		return

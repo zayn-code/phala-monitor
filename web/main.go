@@ -7,6 +7,7 @@ import (
 
 func InitWeb() {
 	r := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
 
 	r.StaticFS("static", http.Dir("web/static"))
 	r.Delims("{[", "]}")
