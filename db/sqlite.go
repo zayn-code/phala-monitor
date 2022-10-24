@@ -10,7 +10,7 @@ import (
 
 func InitSqlite() {
 	var err error
-	global.DB, err = gorm.Open(sqlite.Open("workers.db"), &gorm.Config{})
+	global.DB, err = gorm.Open(sqlite.Open("db/workers.db"), &gorm.Config{})
 	if err != nil {
 		panic("init db error:" + err.Error())
 	}
