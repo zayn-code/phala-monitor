@@ -2,10 +2,8 @@ package cron
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/go-resty/resty/v2"
 	"github.com/shopspring/decimal"
-	"gorm.io/gorm"
 	"log"
 	"pha/common"
 	"pha/db"
@@ -70,7 +68,9 @@ func WorkerStart() {
 	//是否保存数据
 	isSave := false
 	date := time.Now().Format(global.GoDate)
-	if firstErr := global.DB.Where("date = ?", date).First(&db.Worker{}).Error; errors.Is(firstErr, gorm.ErrRecordNotFound) {
+	var todayData []db.Worker
+	global.DB.Where("date = ?", date).Limit(1).Find(&todayData)
+	if len(todayData) == 0 {
 		yesterday := time.Now().AddDate(0, 0, -1).Format(global.GoDate)
 		var yesterdayData db.Worker
 		global.DB.Where("date = ?", yesterday).First(&yesterdayData)

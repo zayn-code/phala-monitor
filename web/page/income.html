@@ -29,65 +29,85 @@
             </el-button>
         </a>
     </el-affix>
-    <el-card style="margin-top: 10px">
-        <el-input v-model="workerName" placeholder="请输入worker名称" @keyup.enter="getData">
+    <div style="padding: 20px;width: 80%;margin: auto">
+        <el-select v-model="workerNames"
+                   multiple
+                   size="large"
+                   filterable
+                   style="width: 100%;"
+                   placeholder="请选择worker名称"
+                   @change="getData">
+            <el-option
+                    v-for="item in workerNamesOption"
+                    :key="item"
+                    :label="item"
+                    :value="item"
+            />
             <template #append>
                 <el-button icon="Search" @click="getData"/>
             </template>
-        </el-input>
+        </el-select>
+    </div>
+
+
+    <el-card style="height: calc(100% - 120px);overflow-y: scroll;">
+        <div style="display: flex;justify-content: flex-start;flex-wrap: wrap">
+            <div v-for="workerName in workerNames" :id="workerName+'Echart'" style="height: 300px;width: 500px"></div>
+        </div>
     </el-card>
 
-    <div id="incomeEchart" style="height: 300px"></div>
 </div>
 
 </body>
 <script>
-
 const app = Vue.createApp({
     data() {
         return {
             pathname: window.location.pathname,
-            workerName: "",
+            workerNames: [],
+            workerNamesOption: JSON.parse('{[.workerNames]}')
         }
     },
     methods: {
         getData() {
             const loading = ElementPlus.ElLoading.service()
-            axios.post('/api/getWorkerIncome', { workerName: this.workerName }).then(res => {
+            axios.post('/api/getWorkerIncome', { workerNames: this.workerNames }).then(res => {
                 loading.close()
-                this.renderEchart(res.data)
+                const colors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
+                Object.keys(res.data).forEach((workerName, index) => {
+                    this.renderEchart(workerName, res.data[workerName], colors[index % 10])
+                })
             }).catch(err => {
                 loading.close()
                 ElementPlus.ElMessage.error(err.response ? err.response.data : err.message)
             })
         },
-        renderEchart(data) {
-            console.log(data)
-            const chartDom = document.getElementById('incomeEchart')
+        renderEchart(workerName, data, color) {
+            const chartDom = document.getElementById(workerName + 'Echart')
             const myChart = echarts.init(chartDom)
-            const xData = data.map(v => {
-                return v.date
-            })
-            const yData = data.map(v => {
-                return v.totalReward
-            })
             let option = {
+                title: {
+                    text: workerName
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
                 xAxis: {
                     type: 'category',
-                    data: xData
+                    data: Object.keys(data)
                 },
                 yAxis: {
                     type: 'value'
                 },
                 series: [
                     {
-                        data: yData,
+                        data: Object.values(data),
                         type: 'line',
-                        smooth: true
+                        smooth: true,
                     }
-                ]
+                ],
+                color: color
             }
-            console.log(option)
             myChart.setOption(option)
         }
     },
@@ -100,4 +120,9 @@ for ([name, comp] of Object.entries(ElementPlusIconsVue)) {
 }
 app.use(ElementPlus).mount("#app")
 </script>
+<style>
+    html, body, #app {
+        height: calc(100% - 8px);
+    }
+</style>
 </html>
