@@ -84,12 +84,15 @@ func WorkerStart() {
 
 	alarmContent := ""
 	for _, w := range resp.Data.WorkerStates {
+		var miner minerInfo
+		_ = json.Unmarshal([]byte(w.MinerInfoJson), &miner)
+
 		if isSave {
-			saveData(w, date)
+			saveData(w, date, miner)
 		}
 
 		if _, ok := ignoreWorkers[w.Worker.Name]; !ok {
-			if w.Status != "S_MINING" || !strings.Contains(w.LastMessage, "Now the worker should be mining.") {
+			if miner.State != "MiningIdle" || !strings.Contains(w.LastMessage, "Now the worker should be mining.") {
 				if WorkerStatusList[w.Worker.Name]%5 == 0 {
 					restartWorker(w)
 				}
@@ -145,10 +148,7 @@ func formatReward(s string) float64 {
 }
 
 //保存数据
-func saveData(worker workerStates, date string) {
-	var miner minerInfo
-	_ = json.Unmarshal([]byte(worker.MinerInfoJson), &miner)
-
+func saveData(worker workerStates, date string, miner minerInfo) {
 	pid, _ := strconv.Atoi(worker.Worker.Pid)
 	ve, _ := strconv.ParseFloat(miner.Ve, 8)
 	v, _ := strconv.ParseFloat(miner.V, 8)
