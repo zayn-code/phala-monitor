@@ -3,14 +3,12 @@ version: "3"
 services:
   phala-monitor:
     container_name: phala-monitor
-    image: ubuntu
+    image: phala-image
     restart: unless-stopped
-    working_dir: /phala-monitor
+    working_dir: /app
     network_mode: host
     volumes:
-      - ./:/phala-monitor
-      - /usr/bin/docker:/usr/bin/docker
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/app/data
     tty: true
     environment:
       #prb的ip和端口
@@ -29,4 +27,6 @@ services:
       MAIL_USERNAME:
       #发件人的密码（邮箱平台的授权码），以163邮箱为例WWVXQRNWPZAZQOPO
       MAIL_PASSWORD:
+      #运行模式release或debug
+      GIN_MODE: release
     command: ./phala-monitor
