@@ -133,10 +133,10 @@ func restartWorker(worker workerStates) {
 
 //格式化奖励
 func formatReward(s string) float64 {
-	if s == "" {
+	strA := strings.Split(s, " ")
+	if len(strA) < 2 {
 		return 0
 	}
-	strA := strings.Split(s, " ")
 	f, _ := strconv.ParseFloat(strA[0], 4)
 	if strings.Contains(strA[1], "k") {
 		return decimal.NewFromFloat(f).Mul(decimal.NewFromFloat(1000)).InexactFloat64()
