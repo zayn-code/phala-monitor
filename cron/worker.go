@@ -92,7 +92,7 @@ func WorkerStart() {
 		}
 
 		if _, ok := ignoreWorkers[w.Worker.Name]; !ok {
-			if miner.State != "MiningIdle" || !strings.Contains(w.LastMessage, "Now the worker should be mining.") {
+			if miner.State != "WorkerIdle" || !strings.Contains(w.LastMessage, "Now the worker should be active") {
 				if WorkerStatusList[w.Worker.Name]%5 == 0 {
 					restartWorker(w)
 				}
@@ -113,7 +113,7 @@ func WorkerStart() {
 	}
 }
 
-//重启worker
+// 重启worker
 func restartWorker(worker workerStates) {
 	log.Println("restart worker " + worker.Worker.Name + ":")
 	log.Println(worker.LastMessage)
@@ -131,7 +131,7 @@ func restartWorker(worker workerStates) {
 	}
 }
 
-//格式化奖励
+// 格式化奖励
 func formatReward(s string) float64 {
 	strA := strings.Split(s, " ")
 	if len(strA) < 2 {
@@ -147,7 +147,7 @@ func formatReward(s string) float64 {
 	return f
 }
 
-//保存数据
+// 保存数据
 func saveData(worker workerStates, date string, miner minerInfo) {
 	pid, _ := strconv.Atoi(worker.Worker.Pid)
 	ve, _ := strconv.ParseFloat(miner.Ve, 8)
